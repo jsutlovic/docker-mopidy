@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM debian:buster-slim
 
 RUN set -ex \
     # Official Mopidy install for Debian/Ubuntu along with some extensions
@@ -11,22 +11,25 @@ RUN set -ex \
         gnupg \
         gstreamer1.0-alsa \
         gstreamer1.0-plugins-bad \
-        python-crypto \
+        python3-crypto \
+        python3-distutils \
  && curl -L https://apt.mopidy.com/mopidy.gpg | apt-key add - \
  && curl -L https://apt.mopidy.com/mopidy.list -o /etc/apt/sources.list.d/mopidy.list \
  && apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         mopidy \
+        mopidy-mpd \
         mopidy-soundcloud \
         mopidy-spotify \
+ && ln -fs /usr/bin/python3 /usr/bin/python \
  && curl -L https://bootstrap.pypa.io/get-pip.py | python - \
- && pip install -U six pyasn1 requests[security] cryptography \
- && pip install \
-        Mopidy-Iris \
+ && pip3 install -U six pyasn1 requests[security] cryptography \
+ && pip3 install \
         Mopidy-Moped \
+        Mopidy-MusicBox-Webclient \
         Mopidy-GMusic \
         Mopidy-Pandora \
-        Mopidy-YouTube \
+        Mopidy-YouTube==3.0a1 \
         pyopenssl \
         youtube-dl \
  && mkdir -p /var/lib/mopidy/.config \
@@ -62,4 +65,4 @@ VOLUME ["/var/lib/mopidy/local", "/var/lib/mopidy/media"]
 EXPOSE 6600 6680 5555/udp
 
 ENTRYPOINT ["/usr/bin/dumb-init", "/entrypoint.sh"]
-CMD ["/usr/bin/mopidy"]
+CMD ["/usr/bin/python3", "/usr/bin/mopidy"]
